@@ -8,8 +8,9 @@ require_once 'lib/Resque.php';
 require_once 'lib/Resque/Worker.php';
 
 $REDIS_BACKEND = getenv('REDIS_BACKEND');
+$REDIS_BACKEND_DB = getenv('REDIS_BACKEND_DB');
 if(!empty($REDIS_BACKEND)) {
-	Resque::setBackend($REDIS_BACKEND);
+	Resque::setBackend($REDIS_BACKEND, $REDIS_BACKEND_DB ?: 0);
 }
 
 $logLevel = 0;
@@ -34,7 +35,7 @@ if($APP_INCLUDE) {
 
 $interval = 5;
 $INTERVAL = getenv('INTERVAL');
-if(!empty($INTERVAL)) {
+if(!is_null($INTERVAL)) {
 	$interval = $INTERVAL;
 }
 
