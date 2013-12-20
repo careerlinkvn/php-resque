@@ -99,11 +99,20 @@ class Redisent {
                 }
                 $read = 0;
                 $size = substr($reply, 1);
-                do {
-                    $block_size = ($size - $read) > 1024 ? 1024 : ($size - $read);
-                    $response .= fread($this->__sock, $block_size);
-                    $read += $block_size;
-                } while ($read < $size);
+                if ($size > 0) {
+                    do {
+                        $block_size = ($size - $read) > 1024 ? 1024 : ($size - $read);
+                        //$response .= fread($this->__sock, $block_size);
+                        //$read += $block_size;
+                        $fragment = fread($this->__sock, $block_size);
+                        if ($fragment !== false) {
+                            $read += strlen($fragment);
+                            $response .= $fragment;
+                        } else {
+                            return null;
+                        }
+                    } while ($read < $size);
+                }
                 fread($this->__sock, 2); /* discard crlf */
                 break;
             /* Multi-bulk reply */
@@ -122,11 +131,20 @@ class Redisent {
                     else {
                         $read = 0;
                         $block = "";
-                        do {
-                            $block_size = ($size - $read) > 1024 ? 1024 : ($size - $read);
-                            $block .= fread($this->__sock, $block_size);
-                            $read += $block_size;
-                        } while ($read < $size);
+                        if ($size > 0) {
+                            do {
+                                $block_size = ($size - $read) > 1024 ? 1024 : ($size - $read);
+                                //$block .= fread($this->__sock, $block_size);
+                                //$read += $block_size;
+                                $fragment = fread($this->__sock, $block_size);
+                                if ($fragment !== false) {
+                                    $read += strlen($fragment);
+                                    $block .= $fragment;
+                                } else {
+                                    return null;
+                                }
+                            } while ($read < $size);
+                        }
                         fread($this->__sock, 2); /* discard crlf */
                         $response[] = $block;
                     }
